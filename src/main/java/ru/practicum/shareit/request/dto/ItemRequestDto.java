@@ -1,7 +1,7 @@
 package ru.practicum.shareit.request.dto;
 
 import lombok.Builder;
-import ru.practicum.shareit.user.model.User;
+import ru.practicum.shareit.user.dto.UserDto;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -17,6 +17,6 @@ public class ItemRequestDto {
     @NotBlank(message = "Текст запроса не может быть пустым")
     private String description;
     @NotNull(message = "Пользователь, создающий запрос должен существовать")
-    private User requester;
+    private UserDto requester;
     private LocalDateTime created;
 }
