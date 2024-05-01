@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -23,30 +24,28 @@ public class ItemController {
     private final ItemService service;
 
     @PostMapping
-    public ItemDto add(@RequestBody ItemDto item, @RequestHeader("X-Sharer-User-Id") Long ownerId) {
-        return service.add(item, ownerId);
+    public ResponseEntity<ItemDto> add(@RequestBody ItemDto item, @RequestHeader("X-Sharer-User-Id") Long ownerId) {
+        return ResponseEntity.status(201).body(service.add(item, ownerId));
     }
 
     @PatchMapping(ItemApiPathConstants.ITEM_ID_PATH)
-    public ItemDto update(@RequestBody ItemDto item, @RequestHeader("X-Sharer-User-Id") Long ownerId, @Positive @PathVariable Long itemId) throws AccessDeniedException {
+    public ResponseEntity<ItemDto> update(@RequestBody ItemDto item, @RequestHeader("X-Sharer-User-Id") Long ownerId, @Positive @PathVariable Long itemId) throws AccessDeniedException {
         item.setId(itemId);
-        return service.update(item, ownerId);
+        return ResponseEntity.ok(service.update(item, ownerId));
     }
 
     @GetMapping
-    public List<ItemDto> getAllBy(@RequestHeader("X-Sharer-User-Id") Long ownerId) {
-        return service.getAllByOwner(ownerId);
+    public ResponseEntity<List<ItemDto>> getAllBy(@RequestHeader("X-Sharer-User-Id") Long ownerId) {
+        return ResponseEntity.ok(service.getAllByOwner(ownerId));
     }
 
     @GetMapping(ItemApiPathConstants.ITEM_ID_PATH)
-    public ItemDto getById(@PathVariable Long itemId) {
-        return service.getById(itemId);
+    public ResponseEntity<ItemDto> getById(@PathVariable Long itemId) {
+        return ResponseEntity.ok(service.getById(itemId));
     }
 
     @GetMapping(ItemApiPathConstants.SEARCH_ITEMS_PATH)
-    public List<ItemDto> search(@RequestParam String text) {
-        return service.search(text);
+    public ResponseEntity<List<ItemDto>> search(@RequestParam String text) {
+        return ResponseEntity.ok(service.search(text));
     }
-
-
 }
