@@ -1,10 +1,10 @@
-package ru.practicum.shareit.booking.dto;
+package ru.practicum.shareit.booking.model;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
-import ru.practicum.shareit.booking.model.BookingStatus;
+import lombok.Getter;
+import lombok.Setter;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.model.User;
 
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
@@ -12,14 +12,15 @@ import java.time.LocalDate;
 /**
  * TODO Sprint add-bookings.
  */
+@Getter
+@Setter
 @Builder
-@AllArgsConstructor
-public class BookingDto {
+public class Booking {
     private Long id;
     @NotNull(message = "Нельзя забронировать несуществующий предмет")
     private Item item;
     @NotNull(message = "Несуществующий пользователь не может совершать бронирование")
-    private UserDto booker;
+    private User booker;
     @NotNull(message = "Для бронирования нужно выбрать дату начала")
     private LocalDate start;
     @NotNull(message = "Для бронирования нужно выбрать дату конца")
