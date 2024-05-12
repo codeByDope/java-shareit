@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
@@ -14,11 +15,15 @@ import javax.validation.constraints.NotNull;
 @Getter
 @Setter
 @Builder
+@Entity
+@Table(name = "users")
 public class User {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @NotNull(message = "Имя не может быть null")
     @NotBlank(message = "Имя не может быть пустым")
     private String name;
-    @Email
+    @Email(message = "Email введен не верно")
     private String email;
 }

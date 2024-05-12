@@ -1,83 +1,68 @@
 package ru.practicum.shareit.user.service;
 
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import ru.practicum.shareit.user.UserHasAlreadyCreatedException;
+import ru.practicum.shareit.user.UserMapper;
+import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.dto.UserDto;
 
-import javax.validation.ValidationException;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.NoSuchElementException;
 
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
-    private HashMap<Long, UserDto> users = new HashMap<>();
-    private HashMap<Long, String> emails = new HashMap<>();
-    private Long idCounter = 0L;
-
+    private final UserRepository repository;
+    private final UserMapper mapper = UserMapper.INSTANCE;
     @Override
     public UserDto add(UserDto user) {
-        if (emails.containsValue(user.getEmail())) {
-            throw new IllegalArgumentException("Пользователь с таким email уже существует");
+        Long userId = user.getId();
+        if (userId != null && repository.getById(userId) != null) {
+            throw new UserHasAlreadyCreatedException("Пользователь с таким ID уже существует!");
+        } else if (userId != null && userId < 0) {
+            throw new IllegalArgumentException("ID пользователя не может быть отрицательным!");
+        } else {
+            return mapper.toDto(repository.save(mapper.userDtoToUser(user)));
         }
-        if (user.getEmail() == null || user.getName() == null) {
-            throw new ValidationException("Имя и имейл юзера не должны быть null!");
-        }
-        idCounter++;
-        user.setId(idCounter);
-        users.put(idCounter, user);
-
-        emails.put(idCounter, user.getEmail());
-
-        return user;
     }
 
     @Override
-    public UserDto update(UserDto userDto) {
-        Long userId = userDto.getId();
-        if (users.containsKey(userId)) {
-            UserDto existingUser = users.get(userId);
-            if (userDto.getName() != null) {
-                existingUser.setName(userDto.getName());
-            }
-            if (userDto.getEmail() != null) {
-                if (!userDto.getEmail().equals(existingUser.getEmail()) && emails.containsValue(userDto.getEmail())) {
-                    throw new IllegalArgumentException("Пользователь с таким email уже существует");
-                }
-                existingUser.setEmail(userDto.getEmail());
-                emails.put(userId, userDto.getEmail());
-            }
-            return existingUser;
-        } else {
+    public UserDto update(UserDto user) {
+        Long userId = user.getId();
+        if (userId == null) {
+            throw new IllegalArgumentException("ID пользователя не указан!");
+        } else if (userId < 0) {
+            throw new IllegalArgumentException("ID пользователя не может быть отрицательным!");
+        } else if (repository.getById(userId) == null){
             throw new NoSuchElementException("Юзера с таким ID не существует");
+        } else {
+            return mapper.toDto(repository.save(mapper.userDtoToUser(user)));
         }
     }
 
 
     @Override
     public void remove(Long id) {
-        if (users.containsKey(id)) {
-            users.remove(id);
-            emails.remove(id);
-        } else {
+        if (repository.getById(id) == null) {
             throw new NoSuchElementException("Юзера с таким ID не существует");
+        } else {
+            repository.deleteById(id);
         }
     }
 
     @Override
     public List<UserDto> getAll() {
-        return new ArrayList<>(users.values());
+        return mapper.usersToUserDto(repository.findAll());
     }
 
 
     @Override
     public UserDto getById(Long id) {
-        if (users.containsKey(id)) {
-            return users.get(id);
-        } else {
+        if (repository.getById(id) == null) {
             throw new NoSuchElementException("Юзера с таким ID не существует");
+        } else {
+            return mapper.toDto(repository.getById(id));
         }
     }
-
-
 }
