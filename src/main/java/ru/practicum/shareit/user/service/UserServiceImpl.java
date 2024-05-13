@@ -2,10 +2,11 @@ package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import ru.practicum.shareit.user.UserHasAlreadyCreatedException;
 import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.UserRepository;
 import ru.practicum.shareit.user.dto.UserDto;
+import ru.practicum.shareit.user.dto.UserDtoForUpdate;
+import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -15,40 +16,34 @@ import java.util.NoSuchElementException;
 public class UserServiceImpl implements UserService {
     private final UserRepository repository;
     private final UserMapper mapper = UserMapper.INSTANCE;
-    @Override
-    public UserDto add(UserDto user) {
-        Long userId = user.getId();
-        if (userId != null && repository.getById(userId) != null) {
-            throw new UserHasAlreadyCreatedException("Пользователь с таким ID уже существует!");
-        } else if (userId != null && userId < 0) {
-            throw new IllegalArgumentException("ID пользователя не может быть отрицательным!");
-        } else {
-            return mapper.toDto(repository.save(mapper.userDtoToUser(user)));
-        }
-    }
 
     @Override
-    public UserDto update(UserDto user) {
+    public UserDto add(UserDto user) {
+        return mapper.toDto(repository.save(mapper.userDtoToUser(user)));
+    }
+
+
+    @Override
+    public UserDto update(UserDtoForUpdate user) {
         Long userId = user.getId();
-        if (userId == null) {
-            throw new IllegalArgumentException("ID пользователя не указан!");
-        } else if (userId < 0) {
-            throw new IllegalArgumentException("ID пользователя не может быть отрицательным!");
-        } else if (repository.getById(userId) == null){
-            throw new NoSuchElementException("Юзера с таким ID не существует");
-        } else {
-            return mapper.toDto(repository.save(mapper.userDtoToUser(user)));
+
+        User existingUser = repository.findById(userId)
+                .orElseThrow(() -> new NoSuchElementException("Юзера с таким ID не существует"));
+
+        if (user.getName() != null && !user.getName().isEmpty()) {
+            existingUser.setName(user.getName());
         }
+        if (user.getEmail() != null) {
+            existingUser.setEmail(user.getEmail());
+        }
+
+        return mapper.toDto(repository.save(existingUser));
     }
 
 
     @Override
     public void remove(Long id) {
-        if (repository.getById(id) == null) {
-            throw new NoSuchElementException("Юзера с таким ID не существует");
-        } else {
             repository.deleteById(id);
-        }
     }
 
     @Override
@@ -59,10 +54,9 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public UserDto getById(Long id) {
-        if (repository.getById(id) == null) {
-            throw new NoSuchElementException("Юзера с таким ID не существует");
-        } else {
-            return mapper.toDto(repository.getById(id));
-        }
+        User user = repository.findById(id)
+                .orElseThrow(() -> new NoSuchElementException("Юзера с таким ID не существует"));
+
+        return mapper.toDto(user);
     }
 }

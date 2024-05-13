@@ -22,11 +22,15 @@ public class ItemRequest {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @NotNull(message = "Текст запроса не может быть null")
     @NotBlank(message = "Текст запроса не может быть пустым")
     private String description;
+
     @NotNull(message = "Пользователь, создающий запрос должен существовать")
-    @Column(name = "requestor_id")
+    @ManyToOne
+    @JoinColumn(name = "requestor_id")
     private User requester;
+
     private LocalDateTime created;
 }

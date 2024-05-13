@@ -22,18 +22,25 @@ public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @NotNull(message = "Для бронирования нужно выбрать дату начала")
     @Column(name = "start_date")
     private LocalDate start;
+
     @NotNull(message = "Для бронирования нужно выбрать дату конца")
     @Column(name = "end_date")
     private LocalDate end;
+
     @NotNull(message = "Нельзя забронировать несуществующий предмет")
-    @Column(name = "item_id")
+    @ManyToOne
+    @JoinColumn(name = "item_id") // Указываем имя столбца
     private Item item;
+
     @NotNull(message = "Несуществующий пользователь не может совершать бронирование")
-    @Column(name = "booker_id")
+    @ManyToOne
+    @JoinColumn(name = "booker_id") // Указываем имя столбца
     private User booker;
+
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
 }
