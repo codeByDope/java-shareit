@@ -11,7 +11,9 @@ import javax.validation.constraints.Email;
 @ToString
 public class UserDtoForUpdate {
     private Long id;
+
     private String name;
+
     @Email
     private String email;
 }

@@ -6,6 +6,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoForUpdate;
+import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.item.utils.ItemApiPathConstants;
 
@@ -37,13 +38,13 @@ public class ItemController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ItemDto>> getAllBy(@RequestHeader("X-Sharer-User-Id") Long ownerId) {
+    public ResponseEntity<List<ItemDtoWithBooking>> getAllBy(@RequestHeader("X-Sharer-User-Id") Long ownerId) {
         return ResponseEntity.ok(service.getAllByOwner(ownerId));
     }
 
     @GetMapping(ItemApiPathConstants.ITEM_ID_PATH)
-    public ResponseEntity<ItemDto> getById(@PathVariable Long itemId) {
-        return ResponseEntity.ok(service.getById(itemId));
+    public ResponseEntity<ItemDtoWithBooking> getById(@PathVariable Long itemId, @RequestHeader("X-Sharer-User-Id") Long userId) {
+        return ResponseEntity.ok(service.getById(itemId, userId));
     }
 
     @GetMapping(ItemApiPathConstants.SEARCH_ITEMS_PATH)

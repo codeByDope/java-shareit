@@ -37,5 +37,10 @@ public class ErrorHandler {
         return Map.of("Ошибка поиска элемента", e.getMessage());
     }
 
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleIllegalArgument(final IllegalArgumentException e) {
+        return Map.of("error", e.getMessage());
+    }
 
 }

@@ -1,14 +1,11 @@
 package ru.practicum.shareit.booking.model;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * TODO Sprint add-bookings.
@@ -18,27 +15,25 @@ import java.time.LocalDate;
 @Builder
 @Entity
 @Table(name = "bookings")
+@NoArgsConstructor
+@AllArgsConstructor
 public class Booking {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull(message = "Для бронирования нужно выбрать дату начала")
     @Column(name = "start_date")
-    private LocalDate start;
+    private LocalDateTime start;
 
-    @NotNull(message = "Для бронирования нужно выбрать дату конца")
     @Column(name = "end_date")
-    private LocalDate end;
+    private LocalDateTime end;
 
-    @NotNull(message = "Нельзя забронировать несуществующий предмет")
     @ManyToOne
-    @JoinColumn(name = "item_id") // Указываем имя столбца
+    @JoinColumn(name = "item_id")
     private Item item;
 
-    @NotNull(message = "Несуществующий пользователь не может совершать бронирование")
     @ManyToOne
-    @JoinColumn(name = "booker_id") // Указываем имя столбца
+    @JoinColumn(name = "booker_id")
     private User booker;
 
     @Enumerated(EnumType.STRING)
