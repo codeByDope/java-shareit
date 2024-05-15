@@ -14,6 +14,7 @@ import java.util.List;
 @Mapper
 public interface BookingMapper {
     BookingMapper INSTANCE = Mappers.getMapper(BookingMapper.class);
+
     @Mapping(target = "item", ignore = true)
     Booking fromDto(BookingDto dto);
 

@@ -6,8 +6,6 @@ import lombok.Setter;
 import ru.practicum.shareit.user.model.User;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 
 /**
@@ -23,12 +21,9 @@ public class ItemRequest {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull(message = "Текст запроса не может быть null")
-    @NotBlank(message = "Текст запроса не может быть пустым")
     private String description;
 
-    @NotNull(message = "Пользователь, создающий запрос должен существовать")
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "requestor_id")
     private User requester;
 

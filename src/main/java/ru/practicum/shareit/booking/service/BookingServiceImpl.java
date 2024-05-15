@@ -9,13 +9,14 @@ import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingDtoForAnswer;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
-import ru.practicum.shareit.item.ItemMapper;
+import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.UserMapper;
 import ru.practicum.shareit.user.model.User;
 import ru.practicum.shareit.user.service.UserService;
 
+import javax.transaction.Transactional;
 import javax.validation.ValidationException;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
@@ -25,7 +26,6 @@ import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
-//@Transactional(readOnly)
 public class BookingServiceImpl implements BookingService {
     private final BookingRepository repository;
     private final UserService userService;
@@ -34,6 +34,7 @@ public class BookingServiceImpl implements BookingService {
     private final ItemMapper itemMapper = ItemMapper.INSTANCE;
     private final BookingMapper mapper = BookingMapper.INSTANCE;
 
+    @Transactional
     @Override
     public BookingDtoForAnswer add(BookingDto bookingDto, Long userId) throws AccessDeniedException {
         User booker = userMapper.userDtoToUser(userService.getById(userId));
@@ -67,10 +68,10 @@ public class BookingServiceImpl implements BookingService {
 
         Booking savedBooking = repository.save(booking);
 
-        BookingDtoForAnswer result = mapper.toAnswerDto(savedBooking);
-        return result;
+        return mapper.toAnswerDto(savedBooking);
     }
 
+    @Transactional
     @Override
     public BookingDtoForAnswer approve(Long id, Boolean isApproved, Long userId) throws AccessDeniedException {
         Booking booking = repository.findById(id)
@@ -115,20 +116,20 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingDtoForAnswer> getByUser(String state, Long userId) {
         userService.getById(userId);
         List<Booking> result = new ArrayList<>();
-
+        LocalDateTime now = LocalDateTime.now();
         try {
             switch (State.valueOf(state)) {
                 case ALL:
                     result = repository.findAllByBooker_IdOrderByStartDesc(userId);
                     break;
                 case CURRENT:
-                    result = repository.findAllCurrentByBookerId(userId);
+                    result = repository.findAllByBooker_IdAndStartIsBeforeAndEndIsAfter(userId, now, now);
                     break;
                 case PAST:
-                    result = repository.findAllByBooker_IdAndEndIsBeforeOrderByStartDesc(userId, LocalDateTime.now());
+                    result = repository.findAllByBooker_IdAndEndIsBeforeOrderByStartDesc(userId, now);
                     break;
                 case FUTURE:
-                    result = repository.findAllByBooker_IdAndStartIsAfterOrderByStartDesc(userId, LocalDateTime.now());
+                    result = repository.findAllByBooker_IdAndStartIsAfterOrderByStartDesc(userId, now);
                     break;
                 case WAITING:
                     result = repository.findAllByBooker_IdAndStatusOrderByStartDesc(userId, BookingStatus.WAITING);
@@ -149,20 +150,20 @@ public class BookingServiceImpl implements BookingService {
     public List<BookingDtoForAnswer> getByOwner(String state, Long ownerId) {
         userService.getById(ownerId);
         List<Booking> result = new ArrayList<>();
-
+        LocalDateTime now = LocalDateTime.now();
         try {
             switch (State.valueOf(state)) {
                 case ALL:
                     result = repository.findAllByItem_Owner_IdOrderByStartDesc(ownerId);
                     break;
                 case CURRENT:
-                    result = repository.findAllCurrentByItemOwnerId(ownerId);
+                    result = repository.findAllByItem_Owner_IdAndStartIsBeforeAndEndIsAfter(ownerId, now, now);
                     break;
                 case PAST:
-                    result = repository.findAllByItem_Owner_IdAndEndIsBeforeOrderByStartDesc(ownerId, LocalDateTime.now());
+                    result = repository.findAllByItem_Owner_IdAndEndIsBeforeOrderByStartDesc(ownerId, now);
                     break;
                 case FUTURE:
-                    result = repository.findAllByItem_Owner_IdAndStartIsAfterOrderByStartDesc(ownerId, LocalDateTime.now());
+                    result = repository.findAllByItem_Owner_IdAndStartIsAfterOrderByStartDesc(ownerId, now);
                     break;
                 case WAITING:
                     result = repository.findAllByItem_Owner_IdAndStatusOrderByStartDesc(ownerId, BookingStatus.WAITING);

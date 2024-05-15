@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoForUpdate;
 import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
@@ -14,10 +15,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
-
-/**
- * TODO Sprint add-controllers.
- */
 
 @Validated
 @RequiredArgsConstructor
@@ -50,5 +47,10 @@ public class ItemController {
     @GetMapping(ItemApiPathConstants.SEARCH_ITEMS_PATH)
     public ResponseEntity<List<ItemDto>> search(@RequestParam String text) {
         return ResponseEntity.ok(service.search(text));
+    }
+
+    @PostMapping(ItemApiPathConstants.COMMENTS)
+    public ResponseEntity<CommentDto> addComment(@PathVariable Long itemId, @RequestHeader("X-Sharer-User-Id") Long userId, @Valid @RequestBody CommentDto comment) {
+        return ResponseEntity.ok(service.addComment(itemId, userId, comment));
     }
 }

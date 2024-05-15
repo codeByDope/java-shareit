@@ -8,6 +8,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.dto.UserDtoForUpdate;
 import ru.practicum.shareit.user.model.User;
 
+import javax.transaction.Transactional;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -17,12 +18,13 @@ public class UserServiceImpl implements UserService {
     private final UserRepository repository;
     private final UserMapper mapper = UserMapper.INSTANCE;
 
+    @Transactional
     @Override
     public UserDto add(UserDto user) {
         return mapper.toDto(repository.save(mapper.userDtoToUser(user)));
     }
 
-
+    @Transactional
     @Override
     public UserDto update(UserDtoForUpdate user) {
         Long userId = user.getId();
@@ -40,10 +42,10 @@ public class UserServiceImpl implements UserService {
         return mapper.toDto(repository.save(existingUser));
     }
 
-
+    @Transactional
     @Override
     public void remove(Long id) {
-            repository.deleteById(id);
+        repository.deleteById(id);
     }
 
     @Override

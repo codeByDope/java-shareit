@@ -5,6 +5,8 @@ import ru.practicum.shareit.booking.dto.BookingDtoForItemWithBookings;
 import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.dto.UserDto;
 
+import java.util.List;
+
 @ToString
 @Getter
 @Setter
@@ -27,4 +29,6 @@ public class ItemDtoWithBooking {
     private BookingDtoForItemWithBookings nextBooking;
 
     private BookingDtoForItemWithBookings lastBooking;
+
+    private List<CommentDto> comments;
 }

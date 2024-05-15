@@ -43,4 +43,10 @@ public class ErrorHandler {
         return Map.of("error", e.getMessage());
     }
 
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public Map<String, String> handleIllegalState(final IllegalStateException e) {
+        return Map.of("error", e.getMessage());
+    }
+
 }
