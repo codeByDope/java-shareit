@@ -18,13 +18,13 @@ public class CommentDto {
 
     @NotNull
     @NotBlank
-    String text;
+    private String text;
 
-    ItemDto item;
+    private ItemDto item;
 
-    UserDto author;
+    private UserDto author;
 
-    LocalDateTime created;
+    private LocalDateTime created;
 
-    String authorName;
+    private String authorName;
 }

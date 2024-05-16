@@ -42,8 +42,8 @@ public class UserController {
     }
 
     @DeleteMapping(UserApiPathConstants.USER_ID)
-    public ResponseEntity remove(@PathVariable Long userId) {
+    public ResponseEntity<Void> remove(@PathVariable Long userId) {
         service.remove(userId);
-        return ResponseEntity.status(204).body(null);
+        return ResponseEntity.noContent().build();
     }
 }
