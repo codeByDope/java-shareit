@@ -41,6 +41,8 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public List<ItemRequestForGetDto> getByUser(Long userId) {
+        UserDto userDto = userService.getById(userId);
+
         List<ItemRequest> requestsByUser = repository.findAllByRequesterIdOrderByCreatedDesc(userId);
         List<ItemRequestForGetDto> requestGetDto = mapper.toListGetDto(requestsByUser);
 
@@ -52,15 +54,21 @@ public class RequestServiceImpl implements RequestService {
     }
 
     @Override
-    public List<ItemRequestDto> getAll(Long from, Long size) {
-        int page = (int) (from / size);
-        Pageable pageable = PageRequest.of(page, size.intValue());
-        Page<ItemRequest> requests = repository.getAllRequests(pageable);
-        return mapper.toListDto(requests.getContent());
+    public List<ItemRequestDto> getAll(Long from, Long size, Long userId) {
+        Pageable pageable = PageRequest.of(from.intValue(), size.intValue());
+        Page<ItemRequest> requests = repository.getAllRequests(userId, pageable);
+        List<ItemRequestDto> res = mapper.toListDto(requests.getContent());
+
+        for (ItemRequestDto request : res) {
+            request.setItems(itemService.getAllByRequestId(request.getId()));
+        }
+
+        return res;
     }
 
     @Override
-    public ItemRequestForGetDto getById(Long requestId) {
+    public ItemRequestForGetDto getById(Long requestId, Long userId) {
+        UserDto userDto = userService.getById(userId);
         ItemRequest request = repository.findById(requestId)
                 .orElseThrow(() -> new NoSuchElementException("Запроса с таким ID не существует"));
 

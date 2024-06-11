@@ -20,21 +20,23 @@ public class ItemRequestController {
     private final RequestService service;
     @PostMapping
     public ResponseEntity<ItemRequestDto> add(@Valid @RequestBody ItemRequestDto request, @RequestHeader("X-Sharer-User-Id") Long userId) {
-        return null;
+        return ResponseEntity.status(201).body(service.add(request, userId));
     }
 
     @GetMapping
     public ResponseEntity<List<ItemRequestForGetDto>> getByUser(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        return null;
+        return ResponseEntity.ok(service.getByUser(userId));
     }
 
     @GetMapping(path = RequestApiPathConstants.ALL)
-    public ResponseEntity<List<ItemRequestDto>> getAll(@RequestParam Long from, @RequestParam Long size) {
-        return ResponseEntity.ok(service.getAll(from, size));
+    public ResponseEntity<List<ItemRequestDto>> getAll(@RequestParam(defaultValue = "0") Long from,
+                                                       @RequestParam(defaultValue = "100") Long size,
+                                                       @RequestHeader("X-Sharer-User-Id") Long userId) {
+        return ResponseEntity.ok(service.getAll(from, size, userId));
     }
 
     @GetMapping(path = RequestApiPathConstants.BY_ID)
-    public ResponseEntity<ItemRequestForGetDto> getById(@PathVariable Long requestId) {
-        return null;
+    public ResponseEntity<ItemRequestForGetDto> getById(@PathVariable Long requestId, @RequestHeader("X-Sharer-User-Id") Long userId) {
+        return ResponseEntity.ok(service.getById(requestId, userId));
     }
 }
