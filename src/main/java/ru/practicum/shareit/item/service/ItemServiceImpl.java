@@ -7,16 +7,15 @@ import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingDtoForItemWithBookings;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
-import ru.practicum.shareit.item.dto.CommentDto;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoForUpdate;
-import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
+import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.RequestRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
@@ -35,6 +34,7 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository repository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final RequestRepository requestRepository;
     private final BookingMapper bookingMapper = BookingMapper.INSTANCE;
     private final ItemMapper mapper = ItemMapper.INSTANCE;
     private final CommentMapper commentMapper = CommentMapper.INSTANCE;
@@ -44,7 +44,15 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto add(ItemDto item, Long ownerId) {
         UserDto owner = userService.getById(ownerId);
         item.setOwner(owner);
-        return mapper.toDto(repository.save(mapper.toItem(item)));
+        Item res = mapper.toItem(item);
+
+        if (item.getRequestId() != null) {
+            ItemRequest itemRequest = requestRepository.findById(item.getRequestId())
+                    .orElseThrow(() -> new NoSuchElementException("Запроса с таким ID не найдено"));
+            res.setRequest(itemRequest);
+        }
+
+        return mapper.toDto(repository.save(res));
     }
 
     @Transactional
@@ -200,5 +208,11 @@ public class ItemServiceImpl implements ItemService {
 
         }
         return null;
+    }
+
+    public List<RequestedItemDto> getAllByRequestId(Long requestId) {
+        List<RequestedItemDto> res = mapper.toListRequestedItemDto(repository.findAllByRequestId(requestId));
+
+        return res;
     }
 }
