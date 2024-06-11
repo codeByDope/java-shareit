@@ -15,6 +15,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.transaction.Transactional;
+import javax.validation.ValidationException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -55,7 +56,11 @@ public class RequestServiceImpl implements RequestService {
 
     @Override
     public List<ItemRequestDto> getAll(Long from, Long size, Long userId) {
-        Pageable pageable = PageRequest.of(from.intValue(), size.intValue());
+        if (from < 0 || size < 0) {
+            throw new ValidationException("Параметры пагинации не могут быть отрицательными.");
+        }
+        int page = (int) (from / size);
+        Pageable pageable = PageRequest.of(page, size.intValue());
         Page<ItemRequest> requests = repository.getAllRequests(userId, pageable);
         List<ItemRequestDto> res = mapper.toListDto(requests.getContent());
 

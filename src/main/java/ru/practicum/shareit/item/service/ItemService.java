@@ -13,9 +13,9 @@ public interface ItemService {
 
     ItemDtoWithBooking getById(Long id, Long userId);
 
-    List<ItemDtoWithBooking> getAllByOwner(Long ownerId);
+    List<ItemDtoWithBooking> getAllByOwner(Long ownerId, Long from, Long size);
 
-    List<ItemDto> search(String text);
+    List<ItemDto> search(String text, Long from, Long size);
 
     CommentDto addComment(Long itemId, Long userId, CommentDto commentDto);
 

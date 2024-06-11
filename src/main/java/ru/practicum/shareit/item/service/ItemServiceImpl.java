@@ -1,6 +1,8 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
@@ -20,6 +22,7 @@ import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.transaction.Transactional;
+import javax.validation.ValidationException;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -115,8 +118,13 @@ public class ItemServiceImpl implements ItemService {
 
 
     @Override
-    public List<ItemDtoWithBooking> getAllByOwner(Long id) {
-        List<Item> items = repository.findAllByOwnerIdOrderByIdAsc(id);
+    public List<ItemDtoWithBooking> getAllByOwner(Long id, Long from, Long size) {
+        if (from < 0 || size < 0) {
+            throw new ValidationException("Параметры пагинации не могут быть отрицательными.");
+        }
+        int page = (int) (from / size);
+        Pageable pageable = PageRequest.of(page, size.intValue());
+        List<Item> items = repository.findAllByOwnerIdOrderByIdAsc(id, pageable).getContent();
         LocalDateTime now = LocalDateTime.now();
         List<ItemDtoWithBooking> result = new ArrayList<>();
 
@@ -149,11 +157,18 @@ public class ItemServiceImpl implements ItemService {
 
 
     @Override
-    public List<ItemDto> search(String text) {
+    public List<ItemDto> search(String text, Long from, Long size) {
         if (text.isEmpty()) {
             return new ArrayList<>();
         }
-        List<Item> items = repository.search(text);
+
+        if (from < 0 || size < 0) {
+            throw new ValidationException("Параметры пагинации не могут быть отрицательными.");
+        }
+
+        int page = (int) (from / size);
+        Pageable pageable = PageRequest.of(page, size.intValue());
+        List<Item> items = repository.search(text, pageable).getContent();
         return mapper.itemsToItemDto(items);
     }
 
