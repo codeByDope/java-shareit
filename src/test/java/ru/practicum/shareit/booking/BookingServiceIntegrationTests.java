@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDtoForAnswer;
 import ru.practicum.shareit.booking.model.Booking;
@@ -17,9 +18,11 @@ import ru.practicum.shareit.user.model.User;
 import javax.validation.ValidationException;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @SpringBootTest
@@ -44,6 +47,7 @@ public class BookingServiceIntegrationTests {
     private Booking booking;
 
     @BeforeEach
+    @Rollback
     public void setUp() {
         owner = User.builder()
                 .name("Owner")
@@ -128,5 +132,92 @@ public class BookingServiceIntegrationTests {
             bookingService.approve(nonExistentBookingId, true, ownerId);
         });
     }
+
+    @Test
+    public void testGetByOwnerAllState() {
+        Long ownerId = owner.getId();
+        List<BookingDtoForAnswer> bookings = bookingService.getByOwner(0L, 10L, "ALL", ownerId);
+
+        assertThat(bookings).isNotEmpty();
+        assertThat(bookings.get(0).getId()).isEqualTo(booking.getId());
+    }
+
+    @Test
+    public void testGetByOwnerCurrentState() {
+        Long ownerId = owner.getId();
+        booking.setStart(LocalDateTime.now().minusDays(1));
+        booking.setEnd(LocalDateTime.now().plusDays(1));
+        booking = bookingRepository.save(booking);
+
+        List<BookingDtoForAnswer> bookings = bookingService.getByOwner(0L, 10L, "CURRENT", ownerId);
+
+        assertThat(bookings).isNotEmpty();
+        assertThat(bookings.get(0).getId()).isEqualTo(booking.getId());
+    }
+
+    @Test
+    public void testGetByOwnerPastState() {
+        Long ownerId = owner.getId();
+        booking.setStart(LocalDateTime.now().minusDays(2));
+        booking.setEnd(LocalDateTime.now().minusDays(1));
+        booking = bookingRepository.save(booking);
+
+        List<BookingDtoForAnswer> bookings = bookingService.getByOwner(0L, 10L, "PAST", ownerId);
+
+        assertThat(bookings).isNotEmpty();
+        assertThat(bookings.get(0).getId()).isEqualTo(booking.getId());
+    }
+
+    @Test
+    public void testGetByOwnerFutureState() {
+        Long ownerId = owner.getId();
+        List<BookingDtoForAnswer> bookings = bookingService.getByOwner(0L, 10L, "FUTURE", ownerId);
+
+        assertThat(bookings).isNotEmpty();
+        assertThat(bookings.get(0).getId()).isEqualTo(booking.getId());
+    }
+
+    @Test
+    public void testGetByOwnerWaitingState() {
+        Long ownerId = owner.getId();
+        List<BookingDtoForAnswer> bookings = bookingService.getByOwner(0L, 10L, "WAITING", ownerId);
+
+        assertThat(bookings).isNotEmpty();
+        assertThat(bookings.get(0).getId()).isEqualTo(booking.getId());
+    }
+
+    @Test
+    public void testGetByOwnerRejectedState() {
+        Long ownerId = owner.getId();
+        booking.setStatus(BookingStatus.REJECTED);
+        booking = bookingRepository.save(booking);
+
+        List<BookingDtoForAnswer> bookings = bookingService.getByOwner(0L, 10L, "REJECTED", ownerId);
+
+        assertThat(bookings).isNotEmpty();
+        assertThat(bookings.get(0).getId()).isEqualTo(booking.getId());
+    }
+
+    @Test
+    public void testGetByOwnerThrowsExceptionForInvalidPagination() {
+        Long ownerId = owner.getId();
+
+        assertThatThrownBy(() -> bookingService.getByOwner(-1L, 10L, "ALL", ownerId))
+                .isInstanceOf(ValidationException.class)
+                .hasMessageContaining("Параметры пагинации не могут быть отрицательными.");
+
+        assertThatThrownBy(() -> bookingService.getByOwner(0L, -1L, "ALL", ownerId))
+                .isInstanceOf(ValidationException.class)
+                .hasMessageContaining("Параметры пагинации не могут быть отрицательными.");
+    }
+
+    @Test
+    public void testGetByOwnerThrowsExceptionForUnknownState() {
+        Long ownerId = owner.getId();
+        assertThatThrownBy(() -> bookingService.getByOwner(0L, 10L, "UNKNOWN", ownerId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Unknown state: UNKNOWN");
+    }
 }
+
 
