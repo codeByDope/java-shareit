@@ -218,6 +218,93 @@ public class BookingServiceIntegrationTests {
                 .isInstanceOf(IllegalArgumentException.class)
                 .hasMessageContaining("Unknown state: UNKNOWN");
     }
+
+    @Test
+    public void testGetByUserAllState() {
+        Long userId = booker.getId();
+        List<BookingDtoForAnswer> bookings = bookingService.getByUser(0L, 10L, "ALL", userId);
+
+        assertThat(bookings).isNotEmpty();
+        assertThat(bookings.get(0).getId()).isEqualTo(booking.getId());
+    }
+
+    @Test
+    public void testGetByUserCurrentState() {
+        Long userId = booker.getId();
+        booking.setStart(LocalDateTime.now().minusDays(1));
+        booking.setEnd(LocalDateTime.now().plusDays(1));
+        booking = bookingRepository.save(booking);
+
+        List<BookingDtoForAnswer> bookings = bookingService.getByUser(0L, 10L, "CURRENT", userId);
+
+        assertThat(bookings).isNotEmpty();
+        assertThat(bookings.get(0).getId()).isEqualTo(booking.getId());
+    }
+
+    @Test
+    public void testGetByUserPastState() {
+        Long userId = booker.getId();
+        booking.setStart(LocalDateTime.now().minusDays(2));
+        booking.setEnd(LocalDateTime.now().minusDays(1));
+        booking = bookingRepository.save(booking);
+
+        List<BookingDtoForAnswer> bookings = bookingService.getByUser(0L, 10L, "PAST", userId);
+
+        assertThat(bookings).isNotEmpty();
+        assertThat(bookings.get(0).getId()).isEqualTo(booking.getId());
+    }
+
+    @Test
+    public void testGetByUserFutureState() {
+        Long userId = booker.getId();
+        List<BookingDtoForAnswer> bookings = bookingService.getByUser(0L, 10L, "FUTURE", userId);
+
+        assertThat(bookings).isNotEmpty();
+        assertThat(bookings.get(0).getId()).isEqualTo(booking.getId());
+    }
+
+    @Test
+    public void testGetByUserWaitingState() {
+        Long userId = booker.getId();
+        List<BookingDtoForAnswer> bookings = bookingService.getByUser(0L, 10L, "WAITING", userId);
+
+        assertThat(bookings).isNotEmpty();
+        assertThat(bookings.get(0).getId()).isEqualTo(booking.getId());
+    }
+
+    @Test
+    public void testGetByUserRejectedState() {
+        Long userId = booker.getId();
+        booking.setStatus(BookingStatus.REJECTED);
+        booking = bookingRepository.save(booking);
+
+        List<BookingDtoForAnswer> bookings = bookingService.getByUser(0L, 10L, "REJECTED", userId);
+
+        assertThat(bookings).isNotEmpty();
+        assertThat(bookings.get(0).getId()).isEqualTo(booking.getId());
+    }
+
+    @Test
+    public void testGetByUserThrowsExceptionForInvalidPagination() {
+        Long userId = booker.getId();
+
+        assertThatThrownBy(() -> bookingService.getByUser(-1L, 10L, "ALL", userId))
+                .isInstanceOf(ValidationException.class)
+                .hasMessageContaining("Параметры пагинации не могут быть отрицательными.");
+
+        assertThatThrownBy(() -> bookingService.getByUser(0L, -1L, "ALL", userId))
+                .isInstanceOf(ValidationException.class)
+                .hasMessageContaining("Параметры пагинации не могут быть отрицательными.");
+    }
+
+    @Test
+    public void testGetByUserThrowsExceptionForUnknownState() {
+        Long userId = booker.getId();
+        assertThatThrownBy(() -> bookingService.getByUser(0L, 10L, "UNKNOWN", userId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Unknown state: UNKNOWN");
+    }
 }
+
 
 
