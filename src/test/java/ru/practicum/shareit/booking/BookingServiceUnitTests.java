@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -236,6 +237,88 @@ public class BookingServiceUnitTests {
         verify(bookingRepository, times(1)).findAllByBooker_IdOrderByStartDesc(eq(userId), any(Pageable.class));
     }
 
+    @Test
+    public void testGetByOwnerThrowsExceptionForInvalidPagination() {
+        Long ownerId = 1L;
+        assertThatThrownBy(() -> bookingService.getByOwner(-1L, 10L, "ALL", ownerId))
+                .isInstanceOf(ValidationException.class)
+                .hasMessageContaining("Параметры пагинации не могут быть отрицательными.");
+
+        assertThatThrownBy(() -> bookingService.getByOwner(0L, -1L, "ALL", ownerId))
+                .isInstanceOf(ValidationException.class)
+                .hasMessageContaining("Параметры пагинации не могут быть отрицательными.");
+    }
+
+    @Test
+    public void testGetByOwnerThrowsExceptionForUnknownState() {
+        Long ownerId = 1L;
+        assertThatThrownBy(() -> bookingService.getByOwner(0L, 10L, "UNKNOWN", ownerId))
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessageContaining("Unknown state: UNKNOWN");
+    }
+
+    @Test
+    public void testGetByOwnerAllState() {
+        Long ownerId = 1L;
+        int from = 0;
+        int size = 10;
+        Pageable pageable = PageRequest.of(from / size, size);
+        Booking booking = new Booking();
+        booking.setId(1L);
+
+        UserDto ownerDto = new UserDto(1L, "Owner", "owner@example.com");
+
+        when(userService.getById(ownerId)).thenReturn(ownerDto);
+        when(bookingRepository.findAllByItem_Owner_IdOrderByStartDesc(eq(ownerId), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(Collections.singletonList(booking)));
+
+        List<BookingDtoForAnswer> result = bookingService.getByOwner((long) from, (long) size, "ALL", ownerId);
+
+        assertThat(result).isNotEmpty();
+        verify(bookingRepository, times(1)).findAllByItem_Owner_IdOrderByStartDesc(eq(ownerId), any(Pageable.class));
+    }
+
+    @Test
+    public void testGetByOwnerWaitingState() {
+        Long ownerId = 1L;
+        int from = 0;
+        int size = 10;
+        Pageable pageable = PageRequest.of(from / size, size);
+        Booking booking = new Booking();
+        booking.setId(1L);
+
+        UserDto ownerDto = new UserDto(1L, "Owner", "owner@example.com");
+
+        when(userService.getById(ownerId)).thenReturn(ownerDto);
+        when(bookingRepository.findAllByItem_Owner_IdAndStatusOrderByStartDesc(eq(ownerId), eq(BookingStatus.WAITING), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(Collections.singletonList(booking)));
+
+        List<BookingDtoForAnswer> result = bookingService.getByOwner((long) from, (long) size, "WAITING", ownerId);
+
+        assertThat(result).isNotEmpty();
+        verify(bookingRepository, times(1)).findAllByItem_Owner_IdAndStatusOrderByStartDesc(eq(ownerId), eq(BookingStatus.WAITING), any(Pageable.class));
+    }
+
+    @Test
+    public void testGetByOwnerRejectedState() {
+        Long ownerId = 1L;
+        int from = 0;
+        int size = 10;
+        Pageable pageable = PageRequest.of(from / size, size);
+        Booking booking = new Booking();
+        booking.setId(1L);
+
+        UserDto ownerDto = new UserDto(1L, "Owner", "owner@example.com");
+
+        when(userService.getById(ownerId)).thenReturn(ownerDto);
+        when(bookingRepository.findAllByItem_Owner_IdAndStatusOrderByStartDesc(eq(ownerId), eq(BookingStatus.REJECTED), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(Collections.singletonList(booking)));
+
+        List<BookingDtoForAnswer> result = bookingService.getByOwner((long) from, (long) size, "REJECTED", ownerId);
+
+        assertThat(result).isNotEmpty();
+        verify(bookingRepository, times(1)).findAllByItem_Owner_IdAndStatusOrderByStartDesc(eq(ownerId), eq(BookingStatus.REJECTED), any(Pageable.class));
+    }
 }
 
 
