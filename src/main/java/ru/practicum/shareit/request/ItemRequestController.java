@@ -18,6 +18,7 @@ import java.util.List;
 @RequestMapping(path = RequestApiPathConstants.REQUEST_PATH)
 public class ItemRequestController {
     private final RequestService service;
+
     @PostMapping
     public ResponseEntity<ItemRequestDto> add(@Valid @RequestBody ItemRequestDto request, @RequestHeader("X-Sharer-User-Id") Long userId) {
         return ResponseEntity.status(201).body(service.add(request, userId));
