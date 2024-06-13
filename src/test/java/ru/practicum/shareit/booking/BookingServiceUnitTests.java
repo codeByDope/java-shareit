@@ -136,6 +136,94 @@ public class BookingServiceUnitTests {
     }
 
     @Test
+    public void testAddBookingStartAfterEnd() {
+        Long userId = 1L;
+        Long itemId = 2L;
+        UserDto userDto = new UserDto(1L, "User", "user@example.com");
+        UserDto ownerDto = new UserDto(2L, "Owner", "owner@example.com");
+        ItemDtoWithBooking itemDto = new ItemDtoWithBooking();
+        itemDto.setId(itemId);
+        itemDto.setAvailable(true);
+        itemDto.setOwner(ownerDto);
+
+        BookingDto bookingDto = new BookingDto();
+        bookingDto.setItemId(itemId);
+        bookingDto.setStart(LocalDateTime.now().plusDays(2));
+        bookingDto.setEnd(LocalDateTime.now().plusDays(1));
+
+        when(userService.getById(userId)).thenReturn(userDto);
+        when(itemService.getById(itemId, userId)).thenReturn(itemDto);
+
+        assertThrows(ValidationException.class, () -> bookingService.add(bookingDto, userId));
+    }
+
+    @Test
+    public void testAddBookingStartEqualsEnd() {
+        Long userId = 1L;
+        Long itemId = 2L;
+        UserDto userDto = new UserDto(1L, "User", "user@example.com");
+        UserDto ownerDto = new UserDto(2L, "Owner", "owner@example.com");
+        ItemDtoWithBooking itemDto = new ItemDtoWithBooking();
+        itemDto.setId(itemId);
+        itemDto.setAvailable(true);
+        itemDto.setOwner(ownerDto);
+
+        BookingDto bookingDto = new BookingDto();
+        bookingDto.setItemId(itemId);
+        bookingDto.setStart(LocalDateTime.now().plusDays(1));
+        bookingDto.setEnd(LocalDateTime.now().plusDays(1));
+
+        when(userService.getById(userId)).thenReturn(userDto);
+        when(itemService.getById(itemId, userId)).thenReturn(itemDto);
+
+        assertThrows(ValidationException.class, () -> bookingService.add(bookingDto, userId));
+    }
+
+    @Test
+    public void testAddBookingStartBeforeNow() {
+        Long userId = 1L;
+        Long itemId = 2L;
+        UserDto userDto = new UserDto(1L, "User", "user@example.com");
+        UserDto ownerDto = new UserDto(2L, "Owner", "owner@example.com");
+        ItemDtoWithBooking itemDto = new ItemDtoWithBooking();
+        itemDto.setId(itemId);
+        itemDto.setAvailable(true);
+        itemDto.setOwner(ownerDto);
+
+        BookingDto bookingDto = new BookingDto();
+        bookingDto.setItemId(itemId);
+        bookingDto.setStart(LocalDateTime.now().minusDays(1));
+        bookingDto.setEnd(LocalDateTime.now().plusDays(1));
+
+        when(userService.getById(userId)).thenReturn(userDto);
+        when(itemService.getById(itemId, userId)).thenReturn(itemDto);
+
+        assertThrows(ValidationException.class, () -> bookingService.add(bookingDto, userId));
+    }
+
+    @Test
+    public void testAddBookingEndBeforeNow() {
+        Long userId = 1L;
+        Long itemId = 2L;
+        UserDto userDto = new UserDto(1L, "User", "user@example.com");
+        UserDto ownerDto = new UserDto(2L, "Owner", "owner@example.com");
+        ItemDtoWithBooking itemDto = new ItemDtoWithBooking();
+        itemDto.setId(itemId);
+        itemDto.setAvailable(true);
+        itemDto.setOwner(ownerDto);
+
+        BookingDto bookingDto = new BookingDto();
+        bookingDto.setItemId(itemId);
+        bookingDto.setStart(LocalDateTime.now().plusDays(1));
+        bookingDto.setEnd(LocalDateTime.now().minusDays(1));
+
+        when(userService.getById(userId)).thenReturn(userDto);
+        when(itemService.getById(itemId, userId)).thenReturn(itemDto);
+
+        assertThrows(ValidationException.class, () -> bookingService.add(bookingDto, userId));
+    }
+
+    @Test
     public void testApproveBookingSuccess() throws AccessDeniedException {
         Long userId = 1L;
         Long bookingId = 2L;
@@ -320,5 +408,3 @@ public class BookingServiceUnitTests {
         verify(bookingRepository, times(1)).findAllByItem_Owner_IdAndStatusOrderByStartDesc(eq(ownerId), eq(BookingStatus.REJECTED), any(Pageable.class));
     }
 }
-
-

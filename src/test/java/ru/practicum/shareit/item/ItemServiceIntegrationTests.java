@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.dto.BookingDtoForItemWithBookings;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
 import ru.practicum.shareit.item.dto.ItemDto;
@@ -28,8 +29,7 @@ import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hibernate.validator.internal.util.Contracts.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 @Transactional
@@ -165,34 +165,34 @@ public class ItemServiceIntegrationTests {
         assertEquals(updateDto.getAvailable(), updatedItem.getAvailable());
     }
 
-//    @Test
-//    public void testFindNextBooking() {
-//        User booker = User.builder()
-//                .name("Booker")
-//                .email("booker@example.com")
-//                .build();
-//        booker = userRepository.save(booker);
-//
-//        Booking nextBooking = Booking.builder()
-//                .item(item)
-//                .booker(booker)
-//                .start(LocalDateTime.now().plusDays(2))
-//                .end(LocalDateTime.now().plusDays(3))
-//                .status(BookingStatus.WAITING)
-//                .build();
-//        nextBooking = bookingRepository.save(nextBooking);
-//
-//        BookingDtoForItemWithBookings result = itemService.findNextBooking(item.getId(), LocalDateTime.now());
-//
-//        assertNotNull(result);
-//        assertEquals(nextBooking.getId(), result.getId());
-//        assertEquals(booker.getId(), result.getBookerId());
-//    }
-//
-//    @Test
-//    public void testFindNextBookingNoBookings() {
-//        BookingDtoForItemWithBookings result = itemService.findNextBooking(item.getId(), LocalDateTime.now().plusDays(10));
-//
-//        assertNull(result);
-//    }
+    @Test
+    public void testFindNextBooking() {
+        User booker = User.builder()
+                .name("Booker")
+                .email("booker@example.com")
+                .build();
+        booker = userRepository.save(booker);
+
+        Booking nextBooking = Booking.builder()
+                .item(item)
+                .booker(booker)
+                .start(LocalDateTime.now().plusDays(2))
+                .end(LocalDateTime.now().plusDays(3))
+                .status(BookingStatus.WAITING)
+                .build();
+        nextBooking = bookingRepository.save(nextBooking);
+
+        BookingDtoForItemWithBookings result = itemService.findNextBooking(item.getId(), LocalDateTime.now());
+
+        assertNotNull(result);
+        assertEquals(nextBooking.getId(), result.getId());
+        assertEquals(booker.getId(), result.getBookerId());
+    }
+
+    @Test
+    public void testFindNextBookingNoBookings() {
+        BookingDtoForItemWithBookings result = itemService.findNextBooking(item.getId(), LocalDateTime.now().plusDays(10));
+
+        assertNull(result);
+    }
 }

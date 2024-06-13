@@ -211,7 +211,7 @@ public class ItemServiceImpl implements ItemService {
         return null;
     }
 
-    private BookingDtoForItemWithBookings findNextBooking(Long itemId, LocalDateTime now) {
+    public BookingDtoForItemWithBookings findNextBooking(Long itemId, LocalDateTime now) {
         List<Booking> nextBookings = bookingRepository.findAllByItem_idAndStartIsAfterOrderByStartAsc(itemId, now);
         if (!nextBookings.isEmpty()) {
             BookingDtoForItemWithBookings result = bookingMapper.toItemWithBookings(nextBookings.get(0));
