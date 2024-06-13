@@ -195,7 +195,7 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    private BookingDtoForItemWithBookings findLastBooking(Long itemId, LocalDateTime now) {
+    public BookingDtoForItemWithBookings findLastBooking(Long itemId, LocalDateTime now) {
         List<Booking> lastBookings = bookingRepository.findAllByItem_IdAndStartIsBeforeOrderByStartDesc(itemId, now);
 
         if (!lastBookings.isEmpty()) {

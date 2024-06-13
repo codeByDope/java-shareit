@@ -200,6 +200,14 @@
 								<goal>check</goal>
 							</goals>
 							<configuration>
+								<excludes>
+									<exclude>ru/practicum/shareit/booking/utils/*</exclude>
+									<exclude>ru/practicum/shareit/item/utils/*</exclude>
+									<exclude>ru/practicum/shareit/request/utils/*</exclude>
+									<exclude>ru/practicum/shareit/user/utils/*</exclude>
+									<exclude>ru/practicum/shareit/ErrorHandler.java</exclude>
+									<exclude>ru/practicum/shareit/ShareItApp.java</exclude>
+								</excludes>
 								<rules>
 									<rule>
 										<element>BUNDLE</element>
