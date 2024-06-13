@@ -9,12 +9,12 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
+import ru.practicum.shareit.booking.dto.BookingDtoForItemWithBookings;
+import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
-import ru.practicum.shareit.item.dto.CommentDto;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoForUpdate;
-import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
+import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
@@ -37,6 +37,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
@@ -59,6 +60,9 @@ public class ItemServiceUnitTests {
 
     @Mock
     private ItemMapper itemMapper;
+
+    @Mock
+    private BookingMapper bookingMapper;
 
     @Mock
     private CommentMapper commentMapper;
@@ -131,9 +135,12 @@ public class ItemServiceUnitTests {
         Long userId = 1L;
         User owner = User.builder().id(userId).name("John").email("john@example.com").build();
         Item item = Item.builder().id(itemId).owner(owner).build();
+        ItemDtoWithBooking itemDtoWithBooking = ItemDtoWithBooking.builder().id(itemId).build();
 
         when(itemRepository.findById(itemId)).thenReturn(Optional.of(item));
-        when(itemMapper.toItemDtoWithBooking(any(Item.class))).thenReturn(ItemDtoWithBooking.builder().id(itemId).build());
+        when(itemMapper.toItemDtoWithBooking(any(Item.class))).thenReturn(itemDtoWithBooking);
+        when(bookingMapper.toItemWithBookings(any(Booking.class)))
+                .thenReturn(BookingDtoForItemWithBookings.builder().id(1L).booker(UserDto.builder().id(2L).build()).build());
 
         ItemDtoWithBooking result = itemService.getById(itemId, userId);
 
@@ -165,6 +172,8 @@ public class ItemServiceUnitTests {
 
         when(itemRepository.findAllByOwnerIdOrderByIdAsc(eq(ownerId), any(Pageable.class))).thenReturn(pageItems);
         when(itemMapper.toItemDtoWithBooking(any(Item.class))).thenReturn(ItemDtoWithBooking.builder().id(1L).build());
+        when(bookingMapper.toItemWithBookings(any(Booking.class)))
+                .thenReturn(BookingDtoForItemWithBookings.builder().id(1L).booker(UserDto.builder().id(2L).build()).build());
 
         List<ItemDtoWithBooking> result = itemService.getAllByOwner(ownerId, from, size);
 
@@ -254,5 +263,82 @@ public class ItemServiceUnitTests {
         assertThatThrownBy(() -> itemService.addComment(itemId, userId, commentDto))
                 .isInstanceOf(IllegalStateException.class)
                 .hasMessageContaining("Нельзя оставить комментарий к предмету, который Вы не бронировали");
+    }
+
+    @Test
+    public void testFindLastBookingReturnsNullIfNoValidBooking() {
+        Long itemId = 1L;
+        LocalDateTime now = LocalDateTime.now();
+        Booking booking = Booking.builder().id(1L).start(now.minusDays(1)).status(BookingStatus.CANCELED).build();
+        BookingDtoForItemWithBookings bookingDto = BookingDtoForItemWithBookings.builder().id(1L).status(BookingStatus.CANCELED).booker(UserDto.builder().id(2L).build()).build();
+
+        when(bookingRepository.findAllByItem_IdAndStartIsBeforeOrderByStartDesc(eq(itemId), any(LocalDateTime.class)))
+                .thenReturn(Collections.singletonList(booking));
+        when(bookingMapper.toItemWithBookings(any(Booking.class))).thenReturn(bookingDto);
+
+        BookingDtoForItemWithBookings result = itemService.findLastBooking(itemId, now);
+
+        assertNull(result);
+        verify(bookingRepository, times(1)).findAllByItem_IdAndStartIsBeforeOrderByStartDesc(eq(itemId), any(LocalDateTime.class));
+    }
+
+    @Test
+    public void testFindLastBookingReturnsNullIfNoBookings() {
+        Long itemId = 1L;
+        LocalDateTime now = LocalDateTime.now();
+
+        when(bookingRepository.findAllByItem_IdAndStartIsBeforeOrderByStartDesc(eq(itemId), any(LocalDateTime.class)))
+                .thenReturn(Collections.emptyList());
+
+        BookingDtoForItemWithBookings result = itemService.findLastBooking(itemId, now);
+
+        assertNull(result);
+        verify(bookingRepository, times(1)).findAllByItem_IdAndStartIsBeforeOrderByStartDesc(eq(itemId), any(LocalDateTime.class));
+    }
+
+    @Test
+    public void testFindNextBookingReturnsNullIfNoValidBooking() {
+        Long itemId = 1L;
+        LocalDateTime now = LocalDateTime.now();
+        Booking booking = Booking.builder().id(1L).start(now.plusDays(1)).status(BookingStatus.CANCELED).build();
+        BookingDtoForItemWithBookings bookingDto = BookingDtoForItemWithBookings.builder().id(1L).status(BookingStatus.CANCELED).booker(UserDto.builder().id(2L).build()).build();
+
+        when(bookingRepository.findAllByItem_idAndStartIsAfterOrderByStartAsc(eq(itemId), any(LocalDateTime.class)))
+                .thenReturn(Collections.singletonList(booking));
+        when(bookingMapper.toItemWithBookings(any(Booking.class))).thenReturn(bookingDto);
+
+        BookingDtoForItemWithBookings result = itemService.findNextBooking(itemId, now);
+
+        assertNull(result);
+        verify(bookingRepository, times(1)).findAllByItem_idAndStartIsAfterOrderByStartAsc(eq(itemId), any(LocalDateTime.class));
+    }
+
+    @Test
+    public void testFindNextBookingReturnsNullIfNoBookings() {
+        Long itemId = 1L;
+        LocalDateTime now = LocalDateTime.now();
+
+        when(bookingRepository.findAllByItem_idAndStartIsAfterOrderByStartAsc(eq(itemId), any(LocalDateTime.class)))
+                .thenReturn(Collections.emptyList());
+
+        BookingDtoForItemWithBookings result = itemService.findNextBooking(itemId, now);
+
+        assertNull(result);
+        verify(bookingRepository, times(1)).findAllByItem_idAndStartIsAfterOrderByStartAsc(eq(itemId), any(LocalDateTime.class));
+    }
+
+    @Test
+    public void testGetAllByRequestId() {
+        Long requestId = 1L;
+        Item item = Item.builder().id(1L).build();
+        RequestedItemDto requestedItemDto = RequestedItemDto.builder().id(1L).build();
+
+        when(itemRepository.findAllByRequestId(requestId)).thenReturn(Collections.singletonList(item));
+        when(itemMapper.toListRequestedItemDto(anyList())).thenReturn(Collections.singletonList(requestedItemDto));
+
+        List<RequestedItemDto> result = itemService.getAllByRequestId(requestId);
+
+        assertThat(result).isNotEmpty();
+        verify(itemRepository, times(1)).findAllByRequestId(requestId);
     }
 }

@@ -16,6 +16,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 public class ItemMapperTests {
 
@@ -207,5 +208,45 @@ public class ItemMapperTests {
         assertThat(requestedItemDtos).hasSize(2);
         assertEquals(item1.getId(), requestedItemDtos.get(0).getId());
         assertEquals(item2.getId(), requestedItemDtos.get(1).getId());
+    }
+
+    @Test
+    public void testNullToDto() {
+        assertNull(itemMapper.toDto(null));
+    }
+
+    @Test
+    public void testNullToItem() {
+        assertNull(itemMapper.toItem(null));
+    }
+
+    @Test
+    public void testNullItemsToItemDto() {
+        assertNull(itemMapper.itemsToItemDto(null));
+    }
+
+    @Test
+    public void testNullItemsToItemsDtoWithBooking() {
+        assertNull(itemMapper.itemsToItemsDtoWithBooking(null));
+    }
+
+    @Test
+    public void testNullToItemDtoWithBooking() {
+        assertNull(itemMapper.toItemDtoWithBooking(null));
+    }
+
+    @Test
+    public void testNullToItemFromDtoWithBookings() {
+        assertNull(itemMapper.toItemFromDtoWithBookings(null));
+    }
+
+    @Test
+    public void testNullToRequestedItemDto() {
+        assertNull(itemMapper.toRequestedItemDto(null));
+    }
+
+    @Test
+    public void testNullToListRequestedItemDto() {
+        assertNull(itemMapper.toListRequestedItemDto(null));
     }
 }
