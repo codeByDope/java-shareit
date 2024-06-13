@@ -170,8 +170,10 @@ public class BookingServiceUnitTests {
 
         BookingDto bookingDto = new BookingDto();
         bookingDto.setItemId(itemId);
-        bookingDto.setStart(LocalDateTime.now().plusDays(1));
-        bookingDto.setEnd(LocalDateTime.now().plusDays(1));
+
+        LocalDateTime fixedTime = LocalDateTime.of(2023, 6, 15, 12, 0);
+        bookingDto.setStart(fixedTime);
+        bookingDto.setEnd(fixedTime);
 
         when(userService.getById(userId)).thenReturn(userDto);
         when(itemService.getById(itemId, userId)).thenReturn(itemDto);
