@@ -35,8 +35,10 @@ public class ItemController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ItemDtoWithBooking>> getAllBy(@RequestHeader("X-Sharer-User-Id") Long ownerId) {
-        return ResponseEntity.ok(service.getAllByOwner(ownerId));
+    public ResponseEntity<List<ItemDtoWithBooking>> getAllBy(@RequestParam(defaultValue = "0") Long from,
+                                                             @RequestParam(defaultValue = "100") Long size,
+                                                             @RequestHeader("X-Sharer-User-Id") Long ownerId) {
+        return ResponseEntity.ok(service.getAllByOwner(ownerId, from, size));
     }
 
     @GetMapping(ItemApiPathConstants.ITEM_ID_PATH)
@@ -45,8 +47,10 @@ public class ItemController {
     }
 
     @GetMapping(ItemApiPathConstants.SEARCH_ITEMS_PATH)
-    public ResponseEntity<List<ItemDto>> search(@RequestParam String text) {
-        return ResponseEntity.ok(service.search(text));
+    public ResponseEntity<List<ItemDto>> search(@RequestParam(defaultValue = "0") Long from,
+                                                @RequestParam(defaultValue = "100") Long size,
+                                                @RequestParam String text) {
+        return ResponseEntity.ok(service.search(text, from, size));
     }
 
     @PostMapping(ItemApiPathConstants.COMMENTS)

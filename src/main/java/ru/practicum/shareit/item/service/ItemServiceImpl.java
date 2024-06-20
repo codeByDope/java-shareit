@@ -1,26 +1,28 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.booking.BookingMapper;
 import ru.practicum.shareit.booking.BookingRepository;
 import ru.practicum.shareit.booking.dto.BookingDtoForItemWithBookings;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.model.BookingStatus;
-import ru.practicum.shareit.item.dto.CommentDto;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoForUpdate;
-import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
+import ru.practicum.shareit.item.dto.*;
 import ru.practicum.shareit.item.mapper.CommentMapper;
 import ru.practicum.shareit.item.mapper.ItemMapper;
 import ru.practicum.shareit.item.model.Comment;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.item.repository.CommentRepository;
 import ru.practicum.shareit.item.repository.ItemRepository;
+import ru.practicum.shareit.request.RequestRepository;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.dto.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.transaction.Transactional;
+import javax.validation.ValidationException;
 import java.nio.file.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -35,6 +37,7 @@ public class ItemServiceImpl implements ItemService {
     private final ItemRepository repository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
+    private final RequestRepository requestRepository;
     private final BookingMapper bookingMapper = BookingMapper.INSTANCE;
     private final ItemMapper mapper = ItemMapper.INSTANCE;
     private final CommentMapper commentMapper = CommentMapper.INSTANCE;
@@ -44,7 +47,16 @@ public class ItemServiceImpl implements ItemService {
     public ItemDto add(ItemDto item, Long ownerId) {
         UserDto owner = userService.getById(ownerId);
         item.setOwner(owner);
-        return mapper.toDto(repository.save(mapper.toItem(item)));
+        Item res = mapper.toItem(item);
+
+        if (item.getRequestId() != null) {
+            ItemRequest itemRequest = requestRepository.findById(item.getRequestId())
+                    .orElseThrow(() -> new NoSuchElementException("Запроса с таким ID не найдено"));
+            res.setRequest(itemRequest);
+        }
+
+
+        return mapper.toDto(repository.save(res));
     }
 
     @Transactional
@@ -106,8 +118,13 @@ public class ItemServiceImpl implements ItemService {
 
 
     @Override
-    public List<ItemDtoWithBooking> getAllByOwner(Long id) {
-        List<Item> items = repository.findAllByOwnerIdOrderByIdAsc(id);
+    public List<ItemDtoWithBooking> getAllByOwner(Long id, Long from, Long size) {
+        if (from < 0 || size < 0) {
+            throw new ValidationException("Параметры пагинации не могут быть отрицательными.");
+        }
+        int page = (int) (from / size);
+        Pageable pageable = PageRequest.of(page, size.intValue());
+        List<Item> items = repository.findAllByOwnerIdOrderByIdAsc(id, pageable).getContent();
         LocalDateTime now = LocalDateTime.now();
         List<ItemDtoWithBooking> result = new ArrayList<>();
 
@@ -140,11 +157,18 @@ public class ItemServiceImpl implements ItemService {
 
 
     @Override
-    public List<ItemDto> search(String text) {
+    public List<ItemDto> search(String text, Long from, Long size) {
         if (text.isEmpty()) {
             return new ArrayList<>();
         }
-        List<Item> items = repository.search(text);
+
+        if (from < 0 || size < 0) {
+            throw new ValidationException("Параметры пагинации не могут быть отрицательными.");
+        }
+
+        int page = (int) (from / size);
+        Pageable pageable = PageRequest.of(page, size.intValue());
+        List<Item> items = repository.search(text, pageable).getContent();
         return mapper.itemsToItemDto(items);
     }
 
@@ -171,7 +195,7 @@ public class ItemServiceImpl implements ItemService {
         }
     }
 
-    private BookingDtoForItemWithBookings findLastBooking(Long itemId, LocalDateTime now) {
+    public BookingDtoForItemWithBookings findLastBooking(Long itemId, LocalDateTime now) {
         List<Booking> lastBookings = bookingRepository.findAllByItem_IdAndStartIsBeforeOrderByStartDesc(itemId, now);
 
         if (!lastBookings.isEmpty()) {
@@ -187,7 +211,7 @@ public class ItemServiceImpl implements ItemService {
         return null;
     }
 
-    private BookingDtoForItemWithBookings findNextBooking(Long itemId, LocalDateTime now) {
+    public BookingDtoForItemWithBookings findNextBooking(Long itemId, LocalDateTime now) {
         List<Booking> nextBookings = bookingRepository.findAllByItem_idAndStartIsAfterOrderByStartAsc(itemId, now);
         if (!nextBookings.isEmpty()) {
             BookingDtoForItemWithBookings result = bookingMapper.toItemWithBookings(nextBookings.get(0));
@@ -200,5 +224,11 @@ public class ItemServiceImpl implements ItemService {
 
         }
         return null;
+    }
+
+    public List<RequestedItemDto> getAllByRequestId(Long requestId) {
+        List<RequestedItemDto> res = mapper.toListRequestedItemDto(repository.findAllByRequestId(requestId));
+
+        return res;
     }
 }

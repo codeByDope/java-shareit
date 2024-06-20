@@ -1,9 +1,6 @@
 package ru.practicum.shareit.item.service;
 
-import ru.practicum.shareit.item.dto.CommentDto;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemDtoForUpdate;
-import ru.practicum.shareit.item.dto.ItemDtoWithBooking;
+import ru.practicum.shareit.item.dto.*;
 
 import java.nio.file.AccessDeniedException;
 import java.util.List;
@@ -16,9 +13,11 @@ public interface ItemService {
 
     ItemDtoWithBooking getById(Long id, Long userId);
 
-    List<ItemDtoWithBooking> getAllByOwner(Long ownerId);
+    List<ItemDtoWithBooking> getAllByOwner(Long ownerId, Long from, Long size);
 
-    List<ItemDto> search(String text);
+    List<ItemDto> search(String text, Long from, Long size);
 
     CommentDto addComment(Long itemId, Long userId, CommentDto commentDto);
+
+    List<RequestedItemDto> getAllByRequestId(Long requestId);
 }
