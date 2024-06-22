@@ -15,13 +15,12 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@Validated
 @RequestMapping(path = BookingApiPathConstants.BOOKINGS_PATH)
 public class BookingController {
     private final BookingService service;
 
     @PostMapping
-    public ResponseEntity<BookingDtoForAnswer> add(@Valid @RequestBody BookingDto booking,
+    public ResponseEntity<BookingDtoForAnswer> add(@RequestBody BookingDto booking,
                                                    @RequestHeader("X-Sharer-User-Id") Long userId) throws AccessDeniedException {
         return ResponseEntity.status(201).body(service.add(booking, userId));
     }
