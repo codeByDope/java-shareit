@@ -1,12 +1,13 @@
 package ru.practicum.shareit.controller.request;
 
-import ru.practicum.shareit.client.RequestClient;
-import ru.practicum.shareit.dto.ItemRequestDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.client.RequestClient;
+import ru.practicum.shareit.controller.ParamValidator;
+import ru.practicum.shareit.dto.ItemRequestDto;
 
 import javax.validation.Valid;
 
@@ -35,6 +36,7 @@ public class ItemRequestController {
                                          @RequestParam(defaultValue = "100") Long size,
                                          @RequestHeader("X-Sharer-User-Id") Long userId) {
         log.info("Запрос на получение всех запросов других пользователей");
+        ParamValidator.checkPagination(from, size);
         return client.getAll(userId, from, size);
     }
 

@@ -9,7 +9,6 @@ import ru.practicum.shareit.user.dto.UserDtoForUpdate;
 import ru.practicum.shareit.user.service.UserService;
 import ru.practicum.shareit.user.utils.UserApiPathConstants;
 
-import javax.validation.Valid;
 import javax.validation.constraints.Positive;
 import java.util.List;
 
@@ -31,12 +30,12 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<UserDto> add(@Valid @RequestBody UserDto userDto) {
+    public ResponseEntity<UserDto> add(@RequestBody UserDto userDto) {
         return ResponseEntity.status(201).body(service.add(userDto));
     }
 
     @PatchMapping(UserApiPathConstants.USER_ID)
-    public ResponseEntity<UserDto> update(@Valid @RequestBody UserDtoForUpdate userDto, @Positive @PathVariable Long userId) {
+    public ResponseEntity<UserDto> update(@RequestBody UserDtoForUpdate userDto, @Positive @PathVariable Long userId) {
         userDto.setId(userId);
         return ResponseEntity.ok(service.update(userDto));
     }

@@ -9,7 +9,6 @@ import ru.practicum.shareit.request.dto.ItemRequestForGetDto;
 import ru.practicum.shareit.request.service.RequestService;
 import ru.practicum.shareit.request.utils.RequestApiPathConstants;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @Validated
@@ -20,7 +19,7 @@ public class ItemRequestController {
     private final RequestService service;
 
     @PostMapping
-    public ResponseEntity<ItemRequestDto> add(@Valid @RequestBody ItemRequestDto request, @RequestHeader("X-Sharer-User-Id") Long userId) {
+    public ResponseEntity<ItemRequestDto> add(@RequestBody ItemRequestDto request, @RequestHeader("X-Sharer-User-Id") Long userId) {
         return ResponseEntity.status(201).body(service.add(request, userId));
     }
 

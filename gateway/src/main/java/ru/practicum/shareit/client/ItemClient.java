@@ -1,9 +1,5 @@
 package ru.practicum.shareit.client;
 
-import ru.practicum.shareit.controller.item.ItemApiPathConstants;
-import ru.practicum.shareit.dto.CommentDto;
-import ru.practicum.shareit.dto.ItemDto;
-import ru.practicum.shareit.dto.ItemDtoForUpdate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
@@ -11,7 +7,10 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
-
+import ru.practicum.shareit.controller.item.ItemApiPathConstants;
+import ru.practicum.shareit.dto.CommentDto;
+import ru.practicum.shareit.dto.ItemDto;
+import ru.practicum.shareit.dto.ItemDtoForUpdate;
 
 import java.util.Map;
 

@@ -32,4 +32,4 @@ services:
     depends_on:
     - db
     environment:
-      - SHAREIT_DATASOURSE_URL=jdbc:postgresql://localhost:5432
+      - SHAREIT_DATASOURSE_URL=jdbc:postgresql://db:5432/shareit

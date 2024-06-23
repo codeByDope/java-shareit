@@ -1,20 +1,17 @@
 package ru.practicum.shareit.client;
 
-import org.springframework.boot.context.event.ApplicationReadyEvent;
-import org.springframework.context.event.EventListener;
-import ru.practicum.shareit.controller.booking.BookingApiPathConstants;
-import ru.practicum.shareit.controller.booking.State;
-import ru.practicum.shareit.dto.BookingDto;
-import org.springframework.stereotype.Service;
-
-import java.util.Map;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.stereotype.Service;
 import org.springframework.web.util.DefaultUriBuilderFactory;
+import ru.practicum.shareit.controller.booking.BookingApiPathConstants;
+import ru.practicum.shareit.controller.booking.State;
+import ru.practicum.shareit.dto.BookingDto;
+
+import java.util.Map;
 
 
 @Service

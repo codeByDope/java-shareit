@@ -24,7 +24,7 @@ public class ItemController {
     private final ItemService service;
 
     @PostMapping
-    public ResponseEntity<ItemDto> add(@Valid @RequestBody ItemDto item, @RequestHeader("X-Sharer-User-Id") Long ownerId) {
+    public ResponseEntity<ItemDto> add(@RequestBody ItemDto item, @RequestHeader("X-Sharer-User-Id") Long ownerId) {
         return ResponseEntity.status(201).body(service.add(item, ownerId));
     }
 

@@ -1,15 +1,15 @@
 package ru.practicum.shareit.controller.item;
 
-import ru.practicum.shareit.client.ItemClient;
-import ru.practicum.shareit.controller.ParamValidator;
-import ru.practicum.shareit.dto.CommentDto;
-import ru.practicum.shareit.dto.ItemDto;
-import ru.practicum.shareit.dto.ItemDtoForUpdate;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import ru.practicum.shareit.client.ItemClient;
+import ru.practicum.shareit.controller.ParamValidator;
+import ru.practicum.shareit.dto.CommentDto;
+import ru.practicum.shareit.dto.ItemDto;
+import ru.practicum.shareit.dto.ItemDtoForUpdate;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Positive;
@@ -56,6 +56,7 @@ public class ItemController {
                                          @RequestParam(defaultValue = "100") Long size,
                                          @RequestParam String text) {
         log.info("Запрос на поиск {}", text);
+        ParamValidator.checkPagination(from, size);
         return client.search(userId, text, from, size);
     }
 

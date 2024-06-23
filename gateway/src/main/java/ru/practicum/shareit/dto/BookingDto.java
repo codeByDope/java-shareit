@@ -1,8 +1,7 @@
 package ru.practicum.shareit.dto;
 
-import ru.practicum.shareit.controller.booking.BookingStatus;
 import lombok.*;
-
+import ru.practicum.shareit.controller.booking.BookingStatus;
 
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Null;
