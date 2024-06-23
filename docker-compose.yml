@@ -3,12 +3,15 @@ version: '3.8'
 services:
   db:
     image: postgres:latest
+    volumes:
+      - /var/lib/postgresql/data/
     ports:
       - "6541:5432"
     environment:
       - POSTGRES_DB=shareit
       - POSTGRES_USER=host
       - POSTGRES_PASSWORD=host
+    restart: on-failure
 
   gateway:
     build: gateway
@@ -20,6 +23,7 @@ services:
     - server
     environment:
       - SHAREIT_SERVER_URL=http://server:9090
+    restart: on-failure
 
   server:
     build: server
@@ -31,3 +35,4 @@ services:
     - db
     environment:
       - SHAREIT_DATASOURSE_URL=jdbc:postgresql://db:5432/shareit
+    restart: on-failure
