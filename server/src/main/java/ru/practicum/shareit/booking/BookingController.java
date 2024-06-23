@@ -2,14 +2,12 @@ package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingDtoForAnswer;
 import ru.practicum.shareit.booking.service.BookingService;
 import ru.practicum.shareit.booking.utils.BookingApiPathConstants;
 
-import javax.validation.Valid;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
 
